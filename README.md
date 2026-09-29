@@ -1,75 +1,83 @@
-# Samvidhan Archive — Ambedkar Digital Heritage
+# Samvidhan Archive
 
-The Ambedkar Digital Heritage platform is an open-source, interactive digital archive preserving and narrating the life, work, and constitutional legacy of Dr. B. R. Ambedkar. It is designed to run both as an immersive local museum kiosk and a globally accessible web archive.
+<p align="center"><strong>Every word he wrote, held in one archive.</strong></p>
 
-## Architecture
+<p align="center">
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-2f6f4f.svg">
+  <img alt="React" src="https://img.shields.io/badge/React-19-1f6feb.svg">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-Backend-1f6feb.svg">
+  <img alt="pgvector" src="https://img.shields.io/badge/Postgres-pgvector-1f6feb.svg">
+  <img alt="On-device AI" src="https://img.shields.io/badge/On--device%20AI-Florence--2-6f42c1.svg">
+</p>
 
-This is a monolithic repository utilizing a modern React/Python stack.
+<p align="center">
+  <a href="docs/ARCHITECTURE.md">Architecture</a> ·
+  <a href="docs/INSTALLATION.md">Installation</a> ·
+  <a href="docs/USER_GUIDE.md">User Guide</a> ·
+  <a href="LICENSE">License</a>
+</p>
 
-- **Frontend**: React (Vite), Tailwind v4, Zustand/Context, React Router.
-- **Backend**: FastAPI (Python), providing REST APIs and background task workers.
-- **Database**: PostgreSQL with `pgvector` for semantic search and graph-based relationships.
-- **Storage**: MinIO (S3-compatible) for raw asset storage (PDFs, images, audio, video).
-- **AI/ML**: Integrated with Anthropic (RAG & Summary) and OpenAI Whisper (transcription).
+---
 
-## Setup & Local Development
+## The problem
 
-### Prerequisites
-- Node.js 20+
-- Python 3.11+
-- Docker & Docker Compose
+Dr. B. R. Ambedkar's writings, speeches, constitutional debates, and manuscripts are scattered across libraries, memorials, and fragmented digital sources. A visitor at an institution like the Dr. Ambedkar International Centre has no single, intelligent way to search his life's work, hear it read aloud in their own language, or ask a question and get an answer grounded in what he actually wrote rather than a generic historical summary.
 
-### 1. Environment Variables
-Copy `.env.example` to `.env` in the root and fill in the necessary keys (e.g. Anthropic/OpenAI API keys). Never commit this file.
+## What Samvidhan Archive does
 
-### 2. Infrastructure (PostgreSQL & MinIO)
-Run the backing services using Docker Compose:
-```bash
-docker-compose -f infra/docker-compose.yml up -d
+- **Connects ideas across the entire collection.** A hybrid search engine allows visitors to query the archive and find relevant speeches, manuscripts, and debate transcripts even if they don't use the exact keywords.
+- **Digitizes fragile historical records.** The system processes uploaded document scans using on-device vision models, extracting text locally so that previously unsearchable archival PDFs and images can be searched and read.
+- **Speaks the visitor's language.** Visitors can switch the interface between English, Hindi, and Marathi, with support for on-demand text translation and text-to-speech audio narration.
+- **Operates safely as a public kiosk.** The interface is built for robust touchscreen use on the museum floor, featuring accessibility controls (high contrast, text sizing), offline caching for network resilience, and idle session timeouts that clear user data automatically.
+
+## System at a glance
+
+```text
+   Visitor kiosk / web ─────┐
+                             │  search, browse, ask
+   Admin panel ─────────────┤  upload, verify, review
+                             ▼
+                Shared API layer (FastAPI)
+                             │
+        ┌────────────────────┼────────────────────┐
+        ▼                    ▼                    ▼
+   Postgres + pgvector   Object storage (MinIO)   Background Tasks (FastAPI)
+   (metadata, mock emb)  (scans, audio, video)    (Florence-2/Tesseract OCR)
 ```
 
-### 3. Backend (FastAPI)
+| Component               | Role                                   | Stack                                      |
+| ----------------------- | -------------------------------------- | ------------------------------------------ |
+| **Web / Kiosk frontend**| Visitor-facing search, reader, kiosk UI| React 19 · Vite · Tailwind 4 · TypeScript  |
+| **API**                 | Content, search, admin endpoints       | FastAPI (Python) · SQLAlchemy              |
+| **Database**            | Metadata storage                       | PostgreSQL + pgvector                      |
+| **Object storage**      | Scans, audio, video, derivatives       | MinIO (S3-compatible)                      |
+| **OCR Engine**          | Extracts text from uploaded scans      | Tesseract (CPU) or Florence-2 (NVIDIA GPU) |
+
+*Note: The AI Q&A and semantic embedding pipelines are currently mocked in the backend API to facilitate frontend development and testing.*
+
+## Getting started
+
 ```bash
-cd apps/api
-python -m venv venv
-# Activate venv
-pip install -r requirements.txt
-uvicorn main:app --reload
+git clone https://github.com/fardeen-gaffoor/THE-MATRIX-Kiosk.git
+cd THE-MATRIX-Kiosk
+docker compose -f infra/docker-compose.yml up
 ```
 
-### 4. Frontend (React)
-```bash
-cd apps/web
-npm install
-npm run dev
-```
-The site will be available at `http://localhost:5173`.
+For full setup instructions, including how to run the apps locally for development and configure the Florence-2 OCR engine, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
-## Kiosk Deployment
+## Using it
 
-The platform includes a dedicated hardware kiosk mode that disables browser features and implements a robust idle reset loop.
+Read the [docs/USER_GUIDE.md](docs/USER_GUIDE.md) to walk through the platform from the perspective of a kiosk visitor exploring the archive and an administrator uploading new historical manuscripts.
 
-1. Ensure the app is running on the host machine.
-2. Execute the kiosk launch script:
-```bash
-.\infra\launch-kiosk.bat
-```
-This script launches Chromium in native `--kiosk` mode, disables pinch-to-zoom and translation popups, and includes a watchdog loop that automatically restarts the browser if a crash occurs.
+## Built with
 
-## Adding Content & Supported Languages
+- **React 19 & Vite** — Frontend framework and build tooling
+- **Tailwind CSS v4** — Utility-first styling alongside custom design tokens
+- **FastAPI** — High-performance async Python API
+- **PostgreSQL & pgvector** — Relational data and vector embedding storage
+- **Microsoft Florence-2 & Tesseract** — Local on-device optical character recognition
+- **MinIO & Redis** — Local object storage and caching infrastructure
 
-**Adding Content**: 
-Content can be added via the Super Admin / Archivist dashboard at `http://localhost:5173/admin`. You can upload PDFs or images which will be automatically queued for OCR transcription and vectorized for the RAG assistant.
+## License
 
-**Adding Languages**:
-The application relies on `react-i18next`. To add a new language (e.g., Tamil):
-1. Create a new locale JSON file in `apps/web/src/locales/ta.json`.
-2. Register the language in `apps/web/src/i18n.ts`.
-3. Add the language toggle to the `App.tsx` global header.
-
-## Backup and Restore
-
-Scripts for routine maintenance are located in the `/infra` directory:
-- `backup.sh`: Dumps the PostgreSQL database and mirrors the MinIO bucket, encrypting the output with GPG.
-- `restore.sh`: Decrypts and restores the database and blob storage.
-- `integrity-check.py`: Recomputes SHA-256 hashes of the blob store to verify against the PREMIS event log.
+MIT — see [LICENSE](LICENSE). Archive content is third-party historical material with its own rights status per item; see [docs/RIGHTS.md](docs/RIGHTS.md) for sourcing and licensing notes.
