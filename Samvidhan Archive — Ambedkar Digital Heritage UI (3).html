@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Samvidhan Archive — Digital Heritage Platform</title>
+<style>
+  :root{
+    --suit-navy:#1f355e;
+    --suit-navy-2:#2a4a85;
+    --suit-navy-3:#3a61ab;
+    --tie-red:#8f1b2b;
+    --tie-red-2:#b3283a;
+    --gold:#c9a24b;
+    --paper:#f3ecdf;
+    --paper-dim:#e6dcc7;
+    --ink:#1a1410;
+    --sans: "Source Sans Pro", "Segoe UI", Arial, sans-serif;
+    --serif: "Marcellus", "Playfair Display", Georgia, serif;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Marcellus&family=Playfair+Display:wght@500;700&family=Source+Sans+Pro:wght@400;600;700&display=swap');
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px);height:100%; background-color: var(--suit-navy);}
+  body{
+    margin:0;
+    height:100%;
+    color:var(--paper);
+    font-family:var(--sans);
+    overflow-x:hidden;
+  }
+
+  /* ===== SITE BACKGROUND ===== */
+  .site-bg-canvas {
+    position:fixed;inset:0;width:100%;height:100%;
+    z-index:-2;pointer-events:none;object-fit:cover;
+  }
+  .site-bg{
+    position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background: linear-gradient(145deg, rgba(31,53,94,0.92) 0%, rgba(42,74,133,0.85) 100%);
+  }
+
+  /* ===== texture backdrop ===== */
+  .weave{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(1200px 700px at 15% -10%, rgba(201,162,75,0.10), transparent 60%),
+      radial-gradient(900px 600px at 110% 20%, rgba(143,27,43,0.14), transparent 55%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.018) 0px, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 8px);
+  }
+
+  header{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px calc(5vw + env(safe-area-inset-left,0px)) 18px calc(5vw + env(safe-area-inset-right,0px));
+    background:linear-gradient(180deg, rgba(16,28,51,0.96), rgba(16,28,51,0.86));
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(201,162,75,0.25);
+  }
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:2px;
+    background:linear-gradient(160deg, var(--tie-red), var(--tie-red-2));
+    position:relative;flex-shrink:0;
+    box-shadow:0 2px 10px rgba(143,27,43,0.5);
+  }
+  .brand-mark::after{
+    content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;
+    background:var(--gold);border-radius:50%;transform:translate(-50%,-50%);
+  }
+  .brand-text{font-family:var(--serif);font-size:1.15rem;letter-spacing:0.3px;color:var(--paper);}
+  .brand-text small{display:block;font-family:var(--sans);font-size:0.62rem;letter-spacing:2px;color:var(--gold);margin-top:2px;}
+  nav{display:flex;gap:28px;font-size:0.92rem;}
+  nav a{color:var(--paper-dim);text-decoration:none;position:relative;padding-bottom:4px;}
+  nav a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:var(--gold);transition:width .3s ease;}
+  nav a:hover::after{width:100%;}
+  @media (max-width:820px){ nav{display:none;} }
+
+  /* ===== HERO ===== */
+  .hero{
+    position:relative;z-index:1;
+    min-height:calc(92vh - env(safe-area-inset-top,0px));
+    display:flex;align-items:center;
+    padding:6vh calc(5vw + env(safe-area-inset-left,0px)) 6vh calc(5vw + env(safe-area-inset-right,0px));
+    gap:6vw;flex-wrap:wrap;
+  }
+  .hero-copy{flex:1 1 420px;max-width:640px;}
+  .eyebrow-line{display:flex;align-items:center;gap:12px;margin-bottom:22px;opacity:0;animation:riseIn .9s ease .15s forwards;}
+  .eyebrow-line .rule{width:46px;height:2px;background:var(--gold);}
+  .eyebrow-line span{font-size:0.82rem;letter-spacing:1.5px;color:var(--gold);}
+  h1{
+    font-family:var(--serif);
+    font-size:clamp(2.4rem, 5vw, 4rem);
+    line-height:1.08;
+    margin:0 0 22px 0;
+    color:var(--paper);
+    opacity:0;animation:riseIn .9s ease .3s forwards;
+  }
+  h1 em{font-style:normal;color:var(--gold);}
+  .hero p.lede{
+    font-size:1.12rem;line-height:1.65;color:var(--paper-dim);max-width:52ch;
+    opacity:0;animation:riseIn .9s ease .48s forwards;
+  }
+  .hero-actions{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap;opacity:0;animation:riseIn .9s ease .62s forwards;}
+  .btn-primary{
+    background:var(--tie-red);color:var(--paper);border:1px solid var(--tie-red-2);
+    padding:14px 26px;border-radius:2px;font-size:0.98rem;font-weight:600;cursor:pointer;
+    letter-spacing:0.3px;transition:transform .25s ease, box-shadow .25s ease, background .25s ease;
+  }
+  .btn-primary:hover{background:var(--tie-red-2);transform:translateY(-2px);box-shadow:0 10px 24px rgba(143,27,43,0.4);}
+  .btn-ghost{
+    background:transparent;color:var(--paper);border:1px solid rgba(243,236,223,0.35);
+    padding:14px 26px;border-radius:2px;font-size:0.98rem;cursor:pointer;letter-spacing:0.3px;
+    transition:border-color .25s ease, background .25s ease;
+  }
+  .btn-ghost:hover{border-color:var(--gold);background:rgba(201,162,75,0.08);}
+
+  @keyframes riseIn{ from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+
+  /* ===== FLOATING IMAGES ===== */
+  .floating-image {
+    position: absolute;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 2px solid rgba(201,162,75,0.5);
+    opacity: 0.65;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+    z-index: 0;
+    pointer-events: auto;
+    object-fit: cover;
+  }
+  .floating-image:hover {
+    transform: scale(1.1) translateY(-5px) !important;
+    opacity: 1;
+    z-index: 10;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+  }
+  .fl-img-1 { top: 15%; right: 4%; width: 220px; transform: rotate(6deg); }
+  .fl-img-2 { top: 65%; left: 6%; width: 180px; transform: rotate(-8deg); }
+  .fl-img-3 { top: 80%; right: 45%; width: 200px; transform: rotate(3deg); }
+  .fl-img-4 { top: 10%; left: 45%; width: 160px; transform: rotate(-5deg); }
+  .fl-img-5 { top: 85%; left: 25%; width: 190px; transform: rotate(7deg); }
+  .fl-img-6 { top: 75%; right: 8%; width: 240px; transform: rotate(-4deg); }
+  .fl-img-7 { top: -5%; left: 15%; width: 200px; transform: rotate(12deg); }
+  .fl-img-8 { top: -2%; right: 30%; width: 170px; transform: rotate(-9deg); }
+  .fl-img-9 { top: 40%; left: 4%; width: 210px; transform: rotate(5deg); }
+  .fl-img-10 { top: 45%; right: 3%; width: 190px; transform: rotate(-6deg); }
+  
+  @media (max-width: 820px) {
+    .floating-image { display: none; }
+  }
+
+  /* ===== hero visual: constitutional book + insignia ===== */
+  .hero-visual{
+    flex:1 1 340px;max-width:460px;display:flex;justify-content:center;align-items:center;
+    opacity:0;animation:riseIn 1s ease .5s forwards;
+  }
+  .insignia{
+    position:relative;width:min(420px,90vw);aspect-ratio:1/1.05;
+  }
+  .insignia .plate{
+    position:absolute;inset:0;
+    background:linear-gradient(155deg, var(--suit-navy-3), var(--suit-navy-2) 55%, var(--suit-navy));
+    border:1px solid rgba(201,162,75,0.4);
+    border-radius:6px;
+    box-shadow:0 30px 60px rgba(0,0,0,0.45), inset 0 0 40px rgba(201,162,75,0.06);
+    overflow:hidden;
+  }
+  .chakra-mount{
+    position:absolute;left:50%;top:46%;
+    width:95%;aspect-ratio:1;
+    transform:translate(-50%,-50%);
+    /* Background removed via JS pixels, no blend mode issues anymore! */
+  }
+  #chakraCanvas {
+    width:100%; height:100%;
+  }
+  .chakra-note{position:absolute;bottom:3%;left:0;right:0;text-align:center;font-size:0.66rem;letter-spacing:1.5px;color:rgba(201,162,75,0.6);}
+
+  /* ===== CONSTITUTION SCROLL BOOK ===== */
+  .constitution{background:var(--suit-navy-2);position:relative;z-index:1;padding:90px calc(5vw + env(safe-area-inset-left,0px)) 40px;}
+  .book-scroller{max-width:1400px;width:100%;margin:0 auto;position:relative;}
+  .book-frame{
+    position:sticky; top:14vh;
+    perspective:2200px;
+    display:flex;justify-content:center; align-items:center;
+    height:52vh; min-height:340px;
+    margin-bottom:6vh;
+    width:100%;
+  }
+  .floating-quote{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:22%; max-width:280px;
+    font-family:var(--serif); font-style:italic;
+    color:#ff4d4d; font-size:clamp(1.1rem, 1.8vw, 1.5rem);
+    line-height:1.45; opacity:0; transition:opacity .4s ease;
+  }
+  .floating-quote::after{
+    content:"“"; position:absolute; font-size:6rem;
+    color:rgba(143,27,43,0.1); top:-40px; left:-20px; z-index:-1;
+    font-style:normal; font-family:var(--serif);
+  }
+  .floating-quote.left{ left:2%; }
+  .floating-quote.right{ right:2%; text-align:right; }
+  .floating-quote.right::after{ content:"”"; left:auto; right:-20px; }
+  @media (max-width:1200px) { .floating-quote { display:none; } }
+  .open-book{
+    position:relative;width:min(680px,86vw);height:100%;display:flex;
+    transform-style:preserve-3d;
+    transform:rotateX(14deg);
+  }
+  .page-stack{
+    position:absolute;top:2%;bottom:2%;width:16px;
+    background:repeating-linear-gradient(#6c1420,#8f1b2b 2px,#500f18 3px);
+    box-shadow:0 6px 14px rgba(0,0,0,0.5);
+  }
+  .page-stack.left{left:calc(50% - 16px);transform:translateZ(-8px) rotateY(2deg);border-radius:3px 0 0 3px;}
+  .page-stack.right{right:calc(50% - 16px);transform:translateZ(-8px) rotateY(-2deg);border-radius:0 3px 3px 0;}
+  .open-book::before{
+    content:"";position:absolute;left:50%;top:0;bottom:0;width:8px;
+    background:linear-gradient(90deg, #101c33, #0a1120, #101c33);
+    transform:translateX(-50%) translateZ(2px);z-index:3;box-shadow:0 0 12px rgba(0,0,0,0.6);
+  }
+  .page{
+    flex:1;padding:36px 30px;color:var(--paper);overflow:hidden;position:relative;
+    background:linear-gradient(100deg, var(--suit-navy-2), #142138 92%, var(--suit-navy));
+    box-shadow:0 30px 60px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.06);
+    transform-style:preserve-3d;
+  }
+  .page-left{
+    border-radius:4px 0 0 4px;
+    transform-origin:right center;
+    transform:rotateY(1deg) translateZ(0px);
+  }
+  .page-right{
+    border-radius:0 4px 4px 0;
+    transform-origin:left center;
+    transform:rotateY(-1deg) translateZ(0px);
+  }
+  .page h4{font-family:var(--serif);color:#ff4d4d;font-size:1.05rem;margin:0 0 10px 0;}
+  .page p{font-size:0.86rem;line-height:1.55;margin:0 0 10px 0;}
+  .page .fol{position:absolute;bottom:14px;right:20px;font-size:0.7rem;color:rgba(255,255,255,0.4);font-family:var(--serif);}
+  .book-progress{
+    max-width:920px;margin:0 auto 40px;height:2px;background:rgba(201,162,75,0.2);position:relative;
+  }
+  .book-progress .fill{position:absolute;left:0;top:0;height:100%;background:var(--gold);width:0%;}
+  .book-lock-hint{max-width:920px;margin:0 auto 30px;text-align:center;font-size:0.78rem;letter-spacing:0.5px;color:rgba(201,162,75,0.7);transition:opacity .4s ease;}
+  .book-lock-hint.done{opacity:0;}
+  .book-spacer{height:260vh;}
+  @media (max-width:640px){
+    .open-book{flex-direction:column;height:auto;min-height:60vh;}
+    .open-book::before{left:0;right:0;top:50%;bottom:auto;width:auto;height:2px;transform:translateY(-50%);}
+    .book-frame{height:64vh;}
+  }
+  .insignia .book{
+    position:absolute;bottom:8%;left:50%;transform:translateX(-50%);width:70%;
+  }
+  .book-spine{height:16px;background:linear-gradient(90deg, var(--tie-red-2), var(--tie-red));border-radius:2px 2px 0 0;}
+  .book-pages{height:34px;background:var(--paper);border-radius:0 0 3px 3px;position:relative;overflow:hidden;}
+  .book-pages::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0 1px, transparent 1px 6px);}
+  .insignia .caption{position:absolute;top:4%;left:0;right:0;text-align:center;font-family:var(--serif);letter-spacing:1px;color:var(--gold);font-size:0.78rem;}
+
+  /* ===== TIE — pull-down interactive corner element ===== */
+  .tie-trigger{
+    position:fixed; top:0; right:calc(6vw + env(safe-area-inset-right,0px));
+    z-index:90; cursor:pointer; user-select:none;
+    display:flex;flex-direction:column;align-items:center;
+    perspective:600px;
+  }
+  .tie-3d{
+    display:flex;flex-direction:column;align-items:center;
+    transform-style:preserve-3d;
+    transform:rotateY(-14deg) rotateX(4deg);
+    transition:transform .4s ease;
+    filter:drop-shadow(10px 14px 18px rgba(0,0,0,0.45));
+  }
+  .tie-trigger:hover .tie-3d{transform:rotateY(-22deg) rotateX(2deg);}
+  .tie-knot{
+    width:34px;height:22px;position:relative;transform-style:preserve-3d;
+    transition:transform .25s ease;
+  }
+  .tie-knot .face{
+    position:absolute;inset:0;
+    background:linear-gradient(160deg, var(--tie-red-2), var(--tie-red));
+    clip-path:polygon(15% 0, 85% 0, 100% 100%, 0 100%);
+  }
+  .tie-knot .side{
+    position:absolute;inset:0;transform:translateZ(-6px) scaleX(0.9);
+    background:linear-gradient(160deg,#6f1420,#4a0d17);
+    clip-path:polygon(15% 0, 85% 0, 100% 100%, 0 100%);
+    filter:blur(0.3px);
+  }
+  .tie-body{
+    width:22px;height:70px;margin-top:-2px;position:relative;
+    transform-style:preserve-3d;
+    transition:height .45s cubic-bezier(.5,0,.2,1);
+  }
+  .tie-body .face{
+    position:absolute;inset:0;
+    background:linear-gradient(160deg, var(--tie-red-2), var(--tie-red) 55%, #6f1420);
+    clip-path:polygon(20% 0,80% 0,100% 92%,50% 100%,0 92%);
+    box-shadow:inset -6px 0 10px rgba(0,0,0,0.3), inset 6px 0 10px rgba(255,255,255,0.05);
+  }
+  .tie-body .fold{
+    position:absolute;left:0;right:0;height:6px;
+    background:rgba(0,0,0,0.18);
+    transform:translateZ(1px);
+  }
+  .tie-hint{
+    margin-top:6px;font-size:0.62rem;letter-spacing:1.5px;color:var(--gold);
+    opacity:0.85;text-align:center;animation:pulseHint 2.6s ease-in-out infinite;
+  }
+  @keyframes pulseHint{ 0%,100%{opacity:0.55;} 50%{opacity:0.95;} }
+  .tie-trigger:hover .tie-knot{transform:scale(1.08);}
+  .tie-trigger.open .tie-body{height:320px;}
+  .tie-trigger.open .tie-hint{opacity:0;}
+  @media (max-width:600px){
+    .tie-trigger{right:16px;}
+    .tie-trigger.open .tie-body{height:70vh;}
+  }
+
+  .bio-panel{
+    position:fixed;top:0;right:0;height:100%;width:min(420px,92vw);
+    background:linear-gradient(180deg, var(--paper), var(--paper-dim));
+    color:var(--ink);
+    z-index:80;
+    transform:translateX(105%);
+    transition:transform .55s cubic-bezier(.5,0,.15,1);
+    box-shadow:-20px 0 60px rgba(0,0,0,0.5);
+    display:flex;flex-direction:column;
+    padding:calc(30px + env(safe-area-inset-top,0px)) 34px 30px 34px;
+    overflow-y:auto;
+  }
+  .bio-panel.open{transform:translateX(0);}
+  .bio-panel .close-x{
+    align-self:flex-end;background:none;border:none;font-size:1.4rem;color:var(--tie-red);cursor:pointer;
+    line-height:1;padding:6px;
+  }
+  .bio-panel h2{font-family:var(--serif);font-size:1.7rem;margin:6px 0 4px 0;color:var(--tie-red);}
+  .bio-panel .role{font-size:0.85rem;letter-spacing:1px;color:#5a4f3f;margin-bottom:18px;}
+  .bio-panel p{font-size:0.96rem;line-height:1.6;margin:0 0 14px 0;}
+  .bio-panel .facts{list-style:none;padding:0;margin:18px 0 0 0;border-top:1px solid rgba(0,0,0,0.12);}
+  .bio-panel .facts li{padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.1);font-size:0.9rem;display:flex;gap:10px;}
+  .bio-panel .facts li b{color:var(--tie-red);min-width:64px;}
+  .scrim{
+    position:fixed;inset:0;background:rgba(8,12,22,0.55);z-index:75;
+    opacity:0;pointer-events:none;transition:opacity .5s ease;
+  }
+  .scrim.show{opacity:1;pointer-events:auto;}
+
+  /* ===== SECTION shell ===== */
+  section{position:relative;z-index:1;padding:80px calc(5vw + env(safe-area-inset-left,0px)) 80px calc(5vw + env(safe-area-inset-right,0px));}
+  .section-head{max-width:640px;margin-bottom:48px;}
+  .section-head .rule-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .section-head .rule-row .rule{width:36px;height:2px;background:var(--tie-red-2);}
+  .section-head .rule-row span{font-size:0.8rem;letter-spacing:1.5px;color:var(--gold);}
+  .section-head h2{font-family:var(--serif);font-size:clamp(1.8rem,3.2vw,2.6rem);margin:0 0 12px 0;}
+  .section-head p{color:var(--paper-dim);font-size:1.02rem;line-height:1.6;max-width:56ch;}
+
+  /* ===== FEATURE GRID (kiosk modules) ===== */
+  .modules{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;
+    background:rgba(201,162,75,0.25);border:1px solid rgba(201,162,75,0.25);
+  }
+  .module{
+    background:var(--suit-navy);padding:32px 26px;transition:background .35s ease;position:relative;
+  }
+  .module:hover{background:var(--suit-navy-2);}
+  .module .glyph{
+    width:44px;height:44px;margin-bottom:20px;position:relative;
+  }
+  .module h3{font-family:var(--serif);font-size:1.18rem;margin:0 0 10px 0;color:var(--paper);}
+  .module p{font-size:0.9rem;line-height:1.55;color:var(--paper-dim);margin:0;}
+  .module .num{position:absolute;top:26px;right:26px;font-family:var(--serif);color:rgba(201,162,75,0.35);font-size:1.6rem;}
+
+  /* glyph shapes drawn in CSS, thematically tied to each feature */
+  .g-search{border:2px solid var(--gold);border-radius:50%;position:relative;}
+  .g-search::after{content:"";position:absolute;width:16px;height:2px;background:var(--gold);bottom:-6px;right:-10px;transform:rotate(45deg);}
+  .g-ocr{border:2px solid var(--gold);position:relative;}
+  .g-ocr::before,.g-ocr::after{content:"";position:absolute;left:6px;right:6px;height:2px;background:var(--gold);}
+  .g-ocr::before{top:12px;} .g-ocr::after{top:22px;}
+  .g-lang{border:2px solid var(--gold);border-radius:50%;position:relative;overflow:hidden;}
+  .g-lang::before{content:"";position:absolute;inset:0;border-left:2px solid var(--gold);left:50%;}
+  .g-av{border:2px solid var(--gold);border-radius:4px;position:relative;}
+  .g-av::after{content:"";position:absolute;left:14px;top:10px;width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:14px solid var(--gold);}
+  .g-time{border:2px solid var(--gold);border-radius:50%;position:relative;}
+  .g-time::after{content:"";position:absolute;left:50%;top:50%;width:1px;height:14px;background:var(--gold);transform:translate(-50%,-100%) rotate(35deg);transform-origin:bottom;}
+  .g-ai{border:2px solid var(--gold);border-radius:4px;position:relative;}
+  .g-ai::before,.g-ai::after{content:"";position:absolute;width:5px;height:5px;background:var(--gold);border-radius:50%;top:9px;}
+  .g-ai::before{left:9px;} .g-ai::after{right:9px;}
+
+  /* ===== TIMELINE ===== */
+  .timeline{position:relative;max-width:900px;margin:0 auto;padding-left:24px;}
+  .timeline::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--gold),var(--tie-red));}
+  .t-item{position:relative;padding:0 0 42px 30px;}
+  .t-item:last-child{padding-bottom:0;}
+  .t-item::before{
+    content:"";position:absolute;left:-3px;top:4px;width:12px;height:12px;border-radius:50%;
+    background:var(--paper);border:3px solid var(--tie-red);
+  }
+  .t-item .yr{font-family:var(--serif);color:var(--gold);font-size:1.05rem;margin-bottom:6px;}
+  .t-item h4{margin:0 0 6px 0;font-size:1.05rem;color:var(--paper);}
+  .t-item p{margin:0;color:var(--paper-dim);font-size:0.92rem;line-height:1.55;max-width:56ch;}
+
+  /* ===== KIOSK MOCK PREVIEW ===== */
+  .kiosk-wrap{display:flex;justify-content:center;}
+  .kiosk-device{display:flex;flex-direction:column;align-items:center;}
+  .kiosk-screen{
+    width:min(760px,92vw);background:var(--suit-navy-2);border:10px solid #0a1224;
+    border-radius:16px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(201,162,75,0.25);
+  }
+  .kiosk-tabs{display:flex;background:var(--suit-navy);border-bottom:1px solid rgba(201,162,75,0.2);overflow-x:auto;}
+  .kt{
+    appearance:none;background:none;border:none;color:var(--paper-dim);font-family:var(--sans);
+    font-size:0.85rem;padding:16px 22px;cursor:pointer;white-space:nowrap;position:relative;flex:1;
+    transition:color .25s ease;
+  }
+  .kt::after{content:"";position:absolute;left:16%;right:16%;bottom:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .25s ease;}
+  .kt.active{color:var(--paper);}
+  .kt.active::after{transform:scaleX(1);}
+  .kpanel{display:none;padding:26px 28px;min-height:340px;}
+  .kpanel.active{display:block;animation:panelIn .35s ease;}
+  @keyframes panelIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .k-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
+  .k-tile{
+    border:1px solid rgba(201,162,75,0.3);border-radius:6px;padding:20px 16px;cursor:pointer;
+    transition:background .25s ease, transform .25s ease;
+  }
+  .k-tile:hover{background:rgba(201,162,75,0.08);transform:translateY(-3px);}
+  .k-tile .ic{width:26px;height:26px;border:2px solid var(--gold);border-radius:6px;margin-bottom:12px;}
+  .k-tile h5{margin:0 0 4px 0;font-size:0.92rem;color:var(--paper);}
+  .k-tile span{font-size:0.76rem;color:var(--gold);}
+  .kiosk-side{padding:0 0 20px 0;border-right:none;}
+  .kiosk-side .q{font-size:0.78rem;letter-spacing:1px;color:var(--gold);margin-bottom:10px;}
+  .kiosk-side .search-bar{
+    display:flex;align-items:center;gap:8px;background:rgba(243,236,223,0.06);
+    border:1px solid rgba(201,162,75,0.3);border-radius:20px;padding:10px 14px;font-size:0.88rem;color:var(--paper-dim);
+  }
+  .kiosk-side .search-bar .dot{width:6px;height:12px;border-right:1px solid var(--gold);animation:blink 1s step-end infinite;}
+  @keyframes blink{50%{opacity:0;}}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .chip{font-size:0.76rem;padding:6px 12px;border:1px solid rgba(201,162,75,0.35);border-radius:20px;color:var(--paper-dim);cursor:pointer;transition:background .2s ease;}
+  .chip:hover{background:rgba(201,162,75,0.1);}
+  .kiosk-main .result{padding:14px 0;border-bottom:1px solid rgba(201,162,75,0.14);}
+  .kiosk-main .result:last-child{border-bottom:none;}
+  .kiosk-main .result h5{margin:0 0 4px 0;font-size:0.95rem;color:var(--paper);}
+  .kiosk-main .result span{font-size:0.8rem;color:var(--gold);}
+  .kiosk-main .result p{margin:6px 0 0 0;font-size:0.85rem;color:var(--paper-dim);line-height:1.5;}
+  .k-time{display:flex;gap:0;overflow-x:auto;padding-bottom:6px;}
+  .k-node{flex:0 0 auto;width:170px;padding:0 18px 0 0;position:relative;}
+  .k-node::before{content:"";position:absolute;top:8px;left:0;right:18px;height:2px;background:rgba(201,162,75,0.3);}
+  .k-node:first-child::before{left:0;}
+  .k-node .dotm{width:10px;height:10px;border-radius:50%;background:var(--gold);margin-bottom:14px;position:relative;z-index:1;}
+  .k-node .yr{font-family:var(--serif);color:var(--gold);font-size:0.95rem;margin-bottom:4px;}
+  .k-node p{font-size:0.8rem;color:var(--paper-dim);line-height:1.5;margin:0;}
+  .k-chat{display:flex;flex-direction:column;gap:14px;}
+  .k-bubble{max-width:80%;padding:12px 16px;border-radius:10px;font-size:0.88rem;line-height:1.5;}
+  .k-bubble.user{align-self:flex-end;background:var(--tie-red);color:var(--paper);border-bottom-right-radius:2px;}
+  .k-bubble.ai{align-self:flex-start;background:rgba(201,162,75,0.1);border:1px solid rgba(201,162,75,0.25);color:var(--paper-dim);border-bottom-left-radius:2px;}
+  .k-bubble.ai .src{display:block;margin-top:8px;font-size:0.72rem;color:var(--gold);}
+  .kiosk-stand{width:120px;display:flex;flex-direction:column;align-items:center;}
+  .kiosk-stand .neck{width:14px;height:54px;background:linear-gradient(90deg,#0a1224,#1c2f52,#0a1224);}
+  .kiosk-stand .base{width:150px;height:14px;border-radius:8px;background:linear-gradient(90deg,#0a1224,#28406b,#0a1224);box-shadow:0 10px 24px rgba(0,0,0,0.5);}
+  @media (max-width:640px){ .kt{padding:14px 14px;font-size:0.78rem;} .k-node{width:140px;} }
+
+  footer{
+    position:relative;z-index:1;padding:44px calc(5vw + env(safe-area-inset-left,0px)) calc(44px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid rgba(201,162,75,0.25);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
+    font-size:0.85rem;color:var(--paper-dim);
+  }
+  footer .gold{color:var(--gold);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<canvas class="site-bg-canvas" id="bgCanvas"></canvas>
+<div class="site-bg" id="siteBg"></div>
+<div class="weave"></div>
+
+<!-- Interactive tie corner element -->
+<div class="tie-trigger" id="tieTrigger" role="button" aria-label="Pull tie to reveal Dr. Ambedkar's story" tabindex="0">
+  <div class="tie-3d">
+    <div class="tie-knot">
+      <div class="side"></div><div class="face"></div>
+    </div>
+    <div class="tie-body" id="tieBody">
+      <div class="face"></div>
+      <div class="fold" style="top:20%"></div>
+      <div class="fold" style="top:45%"></div>
+      <div class="fold" style="top:70%"></div>
+    </div>
+  </div>
+  <div class="tie-hint">PULL&nbsp;THE&nbsp;TIE</div>
+</div>
+<div class="scrim" id="scrim"></div>
+<aside class="bio-panel" id="bioPanel">
+  <button class="close-x" id="closeBio" aria-label="Close">&times;</button>
+  <h2>Dr. Bhimrao Ramji Ambedkar</h2>
+  <div class="role">1891 – 1956 &nbsp;·&nbsp; Architect of the Indian Constitution</div>
+  <p>Born into a community denied basic dignity, he became one of the most formally educated Indians of his generation — degrees from Bombay, Columbia University, and the London School of Economics — and turned that learning into a lifelong argument for equality.</p>
+  <p>As Chairman of the Drafting Committee, he shaped the Constitution of India, embedding fundamental rights, safeguards against discrimination, and a framework for social justice into the nation's founding law.</p>
+  <p>Beyond the Constitution, he was an economist, jurist, editor, and reformer — founding journals, building movements against untouchability, and arguing for labour rights, education, and the political voice of the marginalised.</p>
+  <ul class="facts">
+    <li><b>Born</b> 14 April 1891, Mhow, Central Provinces</li>
+    <li><b>Education</b> Columbia University, LSE, Gray's Inn</li>
+    <li><b>Role</b> Chairman, Constitution Drafting Committee</li>
+    <li><b>Legacy</b> Bharat Ratna, 1990</li>
+  </ul>
+</aside>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div class="brand-text">Samvidhan Archive<small>DR. AMBEDKAR INTERNATIONAL CENTRE</small></div>
+  </div>
+  <nav>
+    <a href="#archive">Archive</a>
+    <a href="#features">Platform</a>
+    <a href="#timeline">Timeline</a>
+    <a href="#kiosk">Kiosk</a>
+  </nav>
+</header>
+
+<section class="hero" data-bg="assets/background/ambedkar.png" style="overflow: hidden;">
+  <!-- Floating Background Images to fill empty spots -->
+  <img src="amedkar.webp" class="floating-image fl-img-1" alt="Ambedkar Portrait">
+  <img src="dr ait main building.webp" class="floating-image fl-img-2" alt="Dr. AIT Campus">
+  <img src="family of ambedkar.jpg" class="floating-image fl-img-3" alt="Ambedkar with family">
+  <img src="amedkar in 1935.jpg" class="floating-image fl-img-4" alt="Ambedkar in 1935">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Dr._Babasaheb_Ambedkar%2C_Drafting_Committee_Chairman_of_the_Indian_Constitution.jpg/640px-Dr._Babasaheb_Ambedkar%2C_Drafting_Committee_Chairman_of_the_Indian_Constitution.jpg" class="floating-image fl-img-5" alt="Drafting Committee Chairman">
+  <img src="dr ait main building.webp" class="floating-image fl-img-6" alt="Dr AIT Main Building">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/B.R._Ambedkar.jpg/640px-B.R._Ambedkar.jpg" class="floating-image fl-img-7" alt="Ambedkar">
+  <img src="ambedkar giving speech.jpg" class="floating-image fl-img-8" alt="Ambedkar delivering speech">
+  <img src="dog.jpg" class="floating-image fl-img-9" alt="Ambedkar with his dog">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Babasaheb_Ambedkar_with_his_wife_Savita_Ambedkar.jpg/640px-Babasaheb_Ambedkar_with_his_wife_Savita_Ambedkar.jpg" class="floating-image fl-img-10" alt="Ambedkar with his wife">
+
+  <div class="hero-copy" style="background: rgba(31,53,94,0.75); padding: 34px; border-radius: 16px; backdrop-filter: blur(12px); border: 1px solid rgba(201,162,75,0.4); z-index: 5; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+    <div class="eyebrow-line"><div class="rule"></div><span>DIGITAL HERITAGE &amp; KNOWLEDGE PLATFORM</span></div>
+    
+    <div style="display: flex; gap: 24px; align-items: flex-start; margin-bottom: 24px;">
+      <img src="amedkar.webp" alt="Dr. B.R. Ambedkar" style="width: 110px; height: 110px; object-fit: cover; border-radius: 50%; border: 3px solid var(--gold); box-shadow: 0 8px 24px rgba(0,0,0,0.5); flex-shrink: 0; margin-top: 8px;">
+      <h1 style="margin-bottom: 0;">Every word he wrote,<br>held in <em>one archive</em>.</h1>
+    </div>
+    
+    <p class="lede" style="color: #fff; max-width: 100%;">An AI-guided institutional archive for Dr. B. R. Ambedkar's speeches, manuscripts, and constitutional debates — searchable, multilingual, and built for interactive kiosks at the Dr. Ambedkar International Centre.</p>
+    
+    <div style="margin-top: 28px; padding-top: 24px; border-top: 1px solid rgba(201,162,75,0.3); display: flex; gap: 20px; align-items: center; background: rgba(0,0,0,0.25); padding: 18px; border-radius: 12px;">
+      <img src="dr ait main building.webp" alt="Dr. Ambedkar Institute of Technology" style="width: 150px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.4); border: 1px solid var(--gold); flex-shrink: 0;">
+      <div>
+        <h4 style="margin: 0 0 6px 0; color: var(--gold); font-family: var(--serif); font-size: 1.15rem;">In Partnership with Dr. AIT</h4>
+        <p style="font-size: 0.9rem; color: #f3ecdf; margin: 0; line-height: 1.45;">Connecting the Dr. Ambedkar Institute of Technology community with this vast digital heritage to inspire the next generation of engineers and scholars.</p>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <button class="btn-primary">Enter the Archive</button>
+      <button class="btn-ghost">Watch the Kiosk Demo</button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="insignia">
+      <div class="plate"></div>
+      <div class="caption">समता · न्याय · संविधान</div>
+      <div class="chakra-mount">
+        <canvas id="chakraCanvas"></canvas>
+      </div>
+      <div class="chakra-note">SCROLL TO SPIN</div>
+      <div class="book">
+        <div class="book-spine"></div>
+        <div class="book-pages"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" data-bg="assets/background/ambedkar.png">
+  <div class="section-head">
+    <div class="rule-row"><div class="rule"></div><span>PLATFORM CAPABILITIES</span></div>
+    <h2>Built for scholars, students, and first-time visitors alike</h2>
+    <p>Six systems work together behind every kiosk and smart display — from raw manuscript to living conversation.</p>
+  </div>
+  <div class="modules">
+    <div class="module"><span class="num">01</span><div class="glyph g-search"></div><h3>Semantic Search</h3><p>AI-powered knowledge mapping connects a single query to speeches, footnotes, and debate transcripts across the whole collection.</p></div>
+    <div class="module"><span class="num">02</span><div class="glyph g-ocr"></div><h3>Manuscript Digitisation</h3><p>OCR recovers fragile handwritten pages and early print into searchable, preservable text without touching the original.</p></div>
+    <div class="module"><span class="num">03</span><div class="glyph g-lang"></div><h3>Multilingual Access</h3><p>Live translation and audio narration open every document to visitors in their own language, read aloud on request.</p></div>
+    <div class="module"><span class="num">04</span><div class="glyph g-av"></div><h3>Audio-Visual Archive</h3><p>Lectures, documentaries, and interviews are catalogued and cross-linked to the texts they discuss.</p></div>
+    <div class="module"><span class="num">05</span><div class="glyph g-time"></div><h3>Interactive Timeline</h3><p>A memorial storytelling module walks visitors chronologically through his life, work, and constitutional legacy.</p></div>
+    <div class="module"><span class="num">06</span><div class="glyph g-ai"></div><h3>AI Research Assistant</h3><p>Answers grounded in the archive itself — every response traceable to a source document, never invented.</p></div>
+  </div>
+</section>
+
+<section id="timeline" data-bg="assets/background/ambedkar.png">
+  <div class="section-head">
+    <div class="rule-row"><div class="rule"></div><span>A LIFE, IN RECORD</span></div>
+    <h2>Milestones the archive is built around</h2>
+  </div>
+  <div class="timeline">
+    <div class="t-item"><div class="yr">1907 – 1923</div><h4>Formal education abroad</h4><p>Degrees from Columbia University and the London School of Economics, at a time few Indians of any background reached either.</p></div>
+    <div class="t-item"><div class="yr">1927</div><h4>Mahad Satyagraha</h4><p>Leads a march to assert the right of the depressed classes to draw water from a public tank — a founding act of the civil rights movement he led.</p></div>
+    <div class="t-item"><div class="yr">1947 – 1949</div><h4>Drafting the Constitution</h4><p>As Chairman of the Drafting Committee, shapes the document that defines India's fundamental rights and structure of government.</p></div>
+    <div class="t-item"><div class="yr">1956</div><h4>Conversion at Nagpur</h4><p>Leads a mass conversion to Buddhism, a final public act rooted in decades of argument against caste-based exclusion.</p></div>
+    <div class="t-item"><div class="yr">1990</div><h4>Bharat Ratna</h4><p>Posthumously awarded India's highest civilian honour, decades after his death in 1956.</p></div>
+  </div>
+</section>
+
+<section class="constitution" id="constitution" data-bg="assets/background/ambedkar.png">
+  <div class="section-head">
+    <div class="rule-row"><div class="rule"></div><span>HOW IT CAME TO BE</span></div>
+    <h2>The Constitution of India, in his own hand</h2>
+    <p>Scroll to turn the pages — from the Drafting Committee's first sitting to the document signed in 1950.</p>
+  </div>
+  <div class="book-progress"><div class="fill" id="progFill"></div></div>
+  <div class="book-lock-hint" id="bookLockHint">Keep scrolling to read every page — the archive continues once you've reached the end</div>
+  <div class="book-scroller" id="bookScroller">
+    <div class="book-frame">
+      <div class="floating-quote left" id="quoteLeft"></div>
+      <div class="floating-quote right" id="quoteRight"></div>
+      <div class="open-book">
+        <div class="page-stack left"></div>
+        <div class="page-stack right"></div>
+        <div class="page page-left" id="pageLeft">
+          <h4>August 1947</h4>
+          <p>The Constituent Assembly forms a Drafting Committee of seven members. Ambedkar, a trained jurist with degrees from Columbia and the LSE, is chosen as Chairman.</p>
+          <span class="fol">i</span>
+        </div>
+        <div class="page page-right" id="pageRight">
+          <h4>The Burden of One Pen</h4>
+          <p>Of the original seven, illness and absence leave Ambedkar carrying most of the drafting alone — reading constitutions of over sixty countries to shape India's own.</p>
+          <span class="fol">ii</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-spacer" id="bookSpacer"></div>
+  </div>
+</section>
+
+<section id="kiosk" data-bg="assets/background/ambedkar.png">
+  <div class="section-head">
+    <div class="rule-row"><div class="rule"></div><span>AT THE KIOSK</span></div>
+    <h2>What a visitor actually taps through</h2>
+    <p>The same screen a visitor stands in front of at the Centre — tap a tab below to try it.</p>
+  </div>
+  <div class="kiosk-wrap">
+    <div class="kiosk-device">
+      <div class="kiosk-screen">
+        <div class="kiosk-tabs" id="kioskTabs">
+          <button class="kt active" data-panel="home">Home</button>
+          <button class="kt" data-panel="search">Search</button>
+          <button class="kt" data-panel="timeline">Timeline</button>
+          <button class="kt" data-panel="ai">Ask AI</button>
+        </div>
+        <div class="kiosk-panels">
+          <div class="kpanel active" id="kp-home">
+            <div class="k-grid">
+              <div class="k-tile"><div class="ic"></div><h5>Speeches</h5><span>240 records</span></div>
+              <div class="k-tile"><div class="ic"></div><h5>Manuscripts</h5><span>68 digitised</span></div>
+              <div class="k-tile"><div class="ic"></div><h5>Constitution</h5><span>395 articles</span></div>
+              <div class="k-tile"><div class="ic"></div><h5>Photographs</h5><span>1,200 images</span></div>
+              <div class="k-tile"><div class="ic"></div><h5>Documentaries</h5><span>18 films</span></div>
+              <div class="k-tile"><div class="ic"></div><h5>Journals</h5><span>Mook Nayak &amp; more</span></div>
+            </div>
+          </div>
+          <div class="kpanel" id="kp-search">
+            <div class="kiosk-side">
+              <div class="q">ASK THE ARCHIVE</div>
+              <div class="search-bar">What did he argue in the Poona Pact?<span class="dot"></span></div>
+              <div class="chip-row">
+                <div class="chip">Constitution</div>
+                <div class="chip">Speeches</div>
+                <div class="chip">Manuscripts</div>
+                <div class="chip">Photographs</div>
+              </div>
+            </div>
+            <div class="kiosk-main">
+              <div class="result"><h5>Annihilation of Caste</h5><span>Manuscript · 1936</span><p>The undelivered address, now fully searchable with translated commentary and OCR-verified original pages.</p></div>
+              <div class="result"><h5>Constituent Assembly Debates</h5><span>Transcript · 25 Nov 1949</span><p>Closing address to the Constituent Assembly, cross-linked to related articles of the Constitution.</p></div>
+              <div class="result"><h5>Mook Nayak</h5><span>Journal · 1920</span><p>Early editorial writing, digitised from archival microfilm and indexed by theme.</p></div>
+            </div>
+          </div>
+          <div class="kpanel" id="kp-timeline">
+            <div class="k-time">
+              <div class="k-node"><div class="dotm"></div><div class="yr">1907</div><p>Enters Elphinstone College after clearing his matriculation.</p></div>
+              <div class="k-node"><div class="dotm"></div><div class="yr">1923</div><p>Returns from the LSE and Columbia, doctorate in hand.</p></div>
+              <div class="k-node"><div class="dotm"></div><div class="yr">1936</div><p>Writes "Annihilation of Caste," undelivered but widely read.</p></div>
+              <div class="k-node"><div class="dotm"></div><div class="yr">1949</div><p>Presents the completed Constitution to the Assembly.</p></div>
+              <div class="k-node"><div class="dotm"></div><div class="yr">1956</div><p>Leads a mass conversion to Buddhism at Nagpur.</p></div>
+            </div>
+          </div>
+          <div class="kpanel" id="kp-ai">
+            <div class="k-chat">
+              <div class="k-bubble user">Why did he call it "Annihilation of Caste" rather than reform?</div>
+              <div class="k-bubble ai">Because he argued caste could not be reformed piece by piece — it had to be rejected as a system entirely, since its logic depended on hierarchy itself.<span class="src">Source: Annihilation of Caste, 1936</span></div>
+              <div class="k-bubble user">Show me where that appears in the Constitution.</div>
+              <div class="k-bubble ai">Article 17 abolishes untouchability outright — a direct line from that 1936 argument to enforceable law.<span class="src">Source: Constitution of India, Art. 17</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="kiosk-stand"><div class="neck"></div><div class="base"></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Samvidhan Archive — a concept UI for the Dr. Ambedkar International Centre.</div>
+  <div class="gold">Pull the tie, top right, for his story.</div>
+</footer>
+
+<script>
+  const tieTrigger = document.getElementById('tieTrigger');
+  const bioPanel = document.getElementById('bioPanel');
+  const scrim = document.getElementById('scrim');
+  const closeBio = document.getElementById('closeBio');
+
+  function openBio(){
+    tieTrigger.classList.add('open');
+    bioPanel.classList.add('open');
+    scrim.classList.add('show');
+  }
+  function closeBioPanel(){
+    tieTrigger.classList.remove('open');
+    bioPanel.classList.remove('open');
+    scrim.classList.remove('show');
+  }
+  tieTrigger.addEventListener('click', () => {
+    bioPanel.classList.contains('open') ? closeBioPanel() : openBio();
+  });
+  tieTrigger.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); tieTrigger.click(); }
+  });
+  closeBio.addEventListener('click', closeBioPanel);
+  scrim.addEventListener('click', closeBioPanel);
+
+  // Animated Background Sequence (Scrub on Scroll)
+  const bgCanvas = document.getElementById('bgCanvas');
+  const bgCtx = bgCanvas.getContext('2d');
+  const bgFrameCount = 150;
+  const bgFrames = [];
+  let bgImagesLoaded = 0;
+  
+  for (let i = 1; i <= bgFrameCount; i++) {
+    const img = new Image();
+    const num = i.toString().padStart(3, '0');
+    img.src = `ezgif-3678613f80d633c3-jpg/ezgif-frame-${num}.jpg`;
+    img.onload = () => {
+      bgImagesLoaded++;
+      if (bgImagesLoaded === 1) renderBgFrame(0);
+    };
+    bgFrames.push(img);
+  }
+
+  let currentBgFrameIndex = -1;
+  function renderBgFrame(index) {
+    if (index === currentBgFrameIndex) return;
+    currentBgFrameIndex = index;
+    const img = bgFrames[index];
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+    
+    if (bgCanvas.width !== img.naturalWidth) bgCanvas.width = img.naturalWidth;
+    if (bgCanvas.height !== img.naturalHeight) bgCanvas.height = img.naturalHeight;
+    
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    bgCtx.drawImage(img, 0, 0);
+  }
+
+  function updateBgScroll() {
+    const y = window.scrollY;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    if (maxScroll <= 0) return;
+    const progress = Math.min(Math.max(y / maxScroll, 0), 1);
+    
+    const frameIndex = Math.min(bgFrameCount - 1, Math.floor(progress * (bgFrameCount - 1)));
+    requestAnimationFrame(() => renderBgFrame(frameIndex));
+  }
+  window.addEventListener('scroll', updateBgScroll, {passive:true});
+  updateBgScroll();
+
+  // 3D Chakra Canvas Sequence
+  const canvas = document.getElementById('chakraCanvas');
+  const ctx = canvas.getContext('2d');
+  const frameCount = 300; // Total frames
+  const frames = [];
+  let imagesLoaded = 0;
+  
+  // Show loading state
+  ctx.font = "14px 'Source Sans Pro', sans-serif";
+  ctx.fillStyle = "#c9a24b";
+  ctx.textAlign = "center";
+  ctx.fillText("Loading 3D...", canvas.width/2, canvas.height/2);
+
+  // Preload frames
+  for (let i = 1; i <= frameCount; i++) {
+    const img = new Image();
+    const num = i.toString().padStart(3, '0');
+    img.src = `assets/chakra-frames/ezgif-frame-${num}.jpg`;
+    img.onload = () => {
+      imagesLoaded++;
+      if (imagesLoaded === 1) renderFrame(0);
+    };
+    frames.push(img);
+  }
+
+  function resizeCanvas() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    if (imagesLoaded > 0) renderFrame(currentFrameIndex);
+  }
+  
+  let currentFrameIndex = 0;
+  let frameFloat = 0;
+  
+  function renderFrame(index) {
+    const img = frames[index];
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+    
+    const cw = canvas.width / (window.devicePixelRatio || 1);
+    const ch = canvas.height / (window.devicePixelRatio || 1);
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    
+    // Use Math.max to crop the wide black sides and zoom into the chakra
+    const scale = Math.max(cw / iw, ch / ih);
+    const w = iw * scale;
+    const h = ih * scale;
+    const x = (cw - w) / 2;
+    const y = (ch - h) / 2;
+    
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(img, x, y, w, h);
+
+    // Programmatically remove the black background to guarantee it fits any frame!
+    try {
+      const physicalW = canvas.width;
+      const physicalH = canvas.height;
+      const imgData = ctx.getImageData(0, 0, physicalW, physicalH);
+      const data = imgData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i] < 35 && data[i+1] < 35 && data[i+2] < 35) {
+          data[i+3] = 0; // set alpha to 0 for dark pixels
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    } catch(e) {}
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  setTimeout(resizeCanvas, 0); // Wait for initial render layout
+
+  // Scroll-driven animation
+  let lastScrollYChakra = window.scrollY;
+  function updateChakraCanvas() {
+    const y = window.scrollY;
+    const delta = y - lastScrollYChakra;
+    lastScrollYChakra = y;
+    
+    if (delta !== 0) {
+      frameFloat += delta * 0.12; 
+      
+      while (frameFloat >= frameCount) frameFloat -= frameCount;
+      while (frameFloat < 0) frameFloat += frameCount;
+      
+      const newFrame = Math.floor(frameFloat);
+      if (newFrame !== currentFrameIndex) {
+        currentFrameIndex = newFrame;
+        requestAnimationFrame(() => renderFrame(currentFrameIndex));
+      }
+    }
+  }
+  window.addEventListener('scroll', updateChakraCanvas, { passive: true });
+
+  // Constitution book — scroll through its spacer to turn pages
+  const CHAPTERS = [
+    { l: {h:"August 1947", p:"The Constituent Assembly forms a Drafting Committee of seven members. Ambedkar, a trained jurist educated at Columbia and the LSE, is chosen as Chairman."},
+      r: {h:"The Burden of One Pen", p:"Illness and absence leave Ambedkar carrying most of the drafting alone — reading the constitutions of over sixty countries to shape India's own."},
+      ql:"Life should be great rather than long.", qr:"Cultivation of mind should be the ultimate aim of human existence." },
+    { l: {h:"Fundamental Rights", p:"He insists equality before law, abolition of untouchability, and freedom of religion be written in as enforceable rights, not mere ideals."},
+      r: {h:"A Government That Answers", p:"Separation of powers, an independent judiciary, and universal adult franchise are drafted to guard against the concentration of power he had studied abroad."},
+      ql:"I measure the progress of a community by the degree of progress which women have achieved.", qr:"Law and order are the medicine of the body politic and when the body politic gets sick, medicine must be administered." },
+    { l: {h:"25 November 1949", p:"In his closing address to the Assembly, he warns that political democracy must rest on social and economic democracy, or it will not endure."},
+      r: {h:"26 January 1950", p:"The Constitution comes into force. The manuscript he shepherded becomes the framework this archive exists to preserve and explain."},
+      ql:"Political tyranny is nothing compared to the social tyranny.", qr:"A great man is different from an eminent one in that he is ready to be the servant of the society." }
+  ];
+  const pageLeft = document.getElementById('pageLeft');
+  const pageRight = document.getElementById('pageRight');
+  const progFill = document.getElementById('progFill');
+  const bookSpacer = document.getElementById('bookSpacer');
+  const quoteLeft = document.getElementById('quoteLeft');
+  const quoteRight = document.getElementById('quoteRight');
+  let currentChapter = -1;
+  
+  function renderChapter(i){
+    if(i === currentChapter) return;
+    const dir = i > currentChapter ? 1 : -1;
+    currentChapter = i;
+    const c = CHAPTERS[i];
+    
+    pageRight.style.transition = 'transform .5s cubic-bezier(.4,0,.2,1)';
+    pageRight.style.transform = `rotateY(${-160*dir}deg) translateZ(2px)`;
+    
+    if (quoteLeft && quoteRight) {
+      quoteLeft.style.opacity = '0';
+      quoteRight.style.opacity = '0';
+    }
+    
+    setTimeout(() => {
+      pageLeft.innerHTML = `<h4>${c.l.h}</h4><p>${c.l.p}</p><span class="fol">${i*2+1}</span>`;
+      pageRight.innerHTML = `<h4>${c.r.h}</h4><p>${c.r.p}</p><span class="fol">${i*2+2}</span>`;
+      pageRight.style.transition = 'none';
+      pageRight.style.transform = 'rotateY(-1deg) translateZ(0px)';
+      
+      if (quoteLeft && quoteRight) {
+        quoteLeft.innerText = c.ql;
+        quoteRight.innerText = c.qr;
+        quoteLeft.style.opacity = '0.9';
+        quoteRight.style.opacity = '0.9';
+      }
+    }, 260);
+  }
+  function updateBook(){
+    const rect = bookSpacer.getBoundingClientRect();
+    const total = bookSpacer.offsetHeight - window.innerHeight;
+    const scrolled = Math.min(Math.max(-rect.top, 0), total);
+    const progress = total > 0 ? scrolled / total : 0;
+    progFill.style.width = (progress*100) + '%';
+    const chapterIndex = Math.min(CHAPTERS.length - 1, Math.floor(progress * CHAPTERS.length));
+    if(progress > 0.001 || rect.top < window.innerHeight) renderChapter(chapterIndex);
+    bookUnlocked = progress >= 0.99;
+    document.getElementById('bookLockHint').classList.toggle('done', bookUnlocked);
+  }
+  window.addEventListener('scroll', updateBook, {passive:true});
+  updateBook();
+
+  // Hold the reader inside the book until every chapter has been scrolled past
+  let bookUnlocked = false;
+  const constitutionSection = document.getElementById('constitution');
+  function bookInProgress(){
+    const r = constitutionSection.getBoundingClientRect();
+    return r.top <= 1 && r.bottom > window.innerHeight;
+  }
+  window.addEventListener('wheel', (e) => {
+    if(e.deltaY > 0 && !bookUnlocked && bookInProgress()){
+      e.preventDefault();
+      window.scrollBy(0, Math.max(4, e.deltaY * 0.55));
+    }
+  }, {passive:false});
+
+  let touchStartY = null;
+  window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, {passive:true});
+  window.addEventListener('touchmove', (e) => {
+    if(touchStartY === null) return;
+    const dy = touchStartY - e.touches[0].clientY;
+    if(dy > 0 && !bookUnlocked && bookInProgress()){
+      e.preventDefault();
+      window.scrollBy(0, Math.max(3, dy * 0.5));
+      touchStartY = e.touches[0].clientY;
+    }
+  }, {passive:false});
+
+  // Kiosk device — tap a tab, swap the panel
+  document.getElementById('kioskTabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.kt');
+    if(!btn) return;
+    document.querySelectorAll('.kt').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.kpanel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('kp-' + btn.dataset.panel).classList.add('active');
+  });
+
+</script>
+</body>
+</html>
